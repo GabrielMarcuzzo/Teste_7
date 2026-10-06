@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão Financeira MEI - MVP</title>
+
+    <!-- ====================================================================
+         SEÇÃO DE ESTILOS (CSS)
+         Arquitetura Mobile-First, Design Limpo e Responsivo
+         ==================================================================== -->
+    <style>
+        /* CSS RESET & VARIÁVEIS DE DESIGN */
+        :root {
+            --cor-primaria: #2563eb;
+            --cor-fundo: #f8fafc;
+            --cor-card: #ffffff;
+            --cor-texto: #1e293b;
+            --cor-texto-suave: #64748b;
+            --cor-borda: #e2e8f0;
+            --cor-sucesso: #16a34a;
+            --cor-erro: #dc2626;
+            --sombra-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --raio-borda: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f1f5f9;
+            color: var(--cor-texto);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 16px;
+        }
+
+        /* CONTAINER SIMULADOR MOBILE COM CENTRALIZAÇÃO DESKTOP */
+        .app-container {
+            width: 100%;
+            max-width: 430px; /* Largura padrão de telas mobile modernas */
+            background-color: var(--cor-fundo);
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            height: fit-content;
+            margin: auto;
+        }
+
+        /* CABEÇALHO */
+        header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 1.25rem;
+            color: var(--cor-texto);
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 0.85rem;
+            color: var(--cor-texto-suave);
+        }
+
+        /* DASHBOARD - CARDS DE RESUMO */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background-color: var(--cor-card);
+            padding: 12px 8px;
+            border-radius: var(--raio-borda);
+            box-shadow: var(--sombra-card);
+            text-align: center;
+            border: 1px solid var(--cor-borda);
+        }
+
+        .card span {
+            font-size: 0.7rem;
+            color: var(--cor-texto-suave);
+            text-transform: uppercase;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .card p {
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        /* Destaques de Cor Dinâmicos */
+        .txt-receita { color: var(--cor-sucesso); }
+        .txt-despesa { color: var(--cor-erro); }
+        .saldo-positivo { color: var(--cor-sucesso); }
+        .saldo-negativo { color: var(--cor-erro); }
+
+        /* FORMULÁRIO DE ENTRADA GERENCIAL */
+        .form-section {
+            background-color: var(--cor-card);
+            padding: 16px;
+            border-radius: var(--raio-borda);
+            box-shadow: var(--sombra-card);
+            border: 1px solid var(--cor-borda);
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--cor-texto-suave);
+            margin-bottom: 4px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--cor-borda);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--cor-primaria);
+        }
+
+        .form-hint {
+            font-size: 0.7rem;
+            color: var(--cor-texto-suave);
+            margin-top: 2px;
+        }
+
+        .btn-adicionar {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--cor-primaria);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-adicionar:hover {
+            opacity: 0.9;
+        }
+
+        /* HISTÓRICO DE LANÇAMENTOS */
+        .history-section {
+            background-color: var(--cor-card);
+            padding: 16px;
+            border-radius: var(--raio-borda);
+            box-shadow: var(--sombra-card);
+            border: 1px solid var(--cor-borda);
+            margin-bottom: 20px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .history-header h2 {
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        /* TABELA DE REGISTROS */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        th {
+            text-align: left;
+            padding: 8px;
+            color: var(--cor-texto-suave);
+            border-bottom: 1px solid var(--cor-borda);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--cor-borda);
+            vertical-align: middle;
+        }
+
+        .categoria-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            background-color: #f1f5f9;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            color: var(--cor-texto-suave);
+        }
+
+        .btn-deletar {
+            background: none;
+            border: none;
+            color: var(--cor-erro);
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .btn-deletar:hover {
+            background-color: #fee2e2;
+        }
+
+        /* BOTÃO DE EXPORTAÇÃO DE RELATÓRIO */
+        .btn-exportar {
+            width: 100%;
+            padding: 10px;
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-exportar:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- CONTAINER DA APLICAÇÃO -->
+    <div class="app-container">
+        
+        <!-- CABEÇALHO -->
+        <header>
+            <h1>Controle Financeiro MEI</h1>
+            <p>Gestão simples, prática e eficiente</p>
+        </header>
+
+        <!-- DASHBOARD (RESUMO DE INDICADORES) -->
+        <section class="dashboard">
+            <div class="card">
+                <span>Receitas</span>
+                <p id="total-receitas" class="txt-receita">R$ 0,00</p>
+            </div>
+            <div class="card">
+                <span>Despesas</span>
+                <p id="total-despesas" class="txt-despesa">R$ 0,00</p>
+            </div>
+            <div class="card">
+                <span>Saldo</span>
+                <p id="saldo-liquido">R$ 0,00</p>
+            </div>
+        </section>
+
+        <!-- FORMULÁRIO DE ENTRADA DE DADOS -->
+        <section class="form-section">
+            <form id="finance-form">
+                <div class="form-group">
+                    <label for="descricao">Descrição do Lançamento</label>
+                    <input type="text" id="descricao" placeholder="Ex: Venda de produto, DAS..." required>
+                </div>
+
+                <div class="form-group">
+                    <label for="valor">Valor (R$)</label>
+                    <input type="number" id="valor" step="0.01" placeholder="Ex: 150.00 ou -50.00" required>
+                    <p class="form-hint">Use valor positivo (+) para Receitas e negativo (-) para Despesas.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="categoria">Categoria</label>
+                    <select id="categoria" required>
+                        <option value="Serviços Prestados">Serviços Prestados</option>
+                        <option value="Venda de Mercadorias">Venda de Mercadorias</option>
+                        <option value="Fornecedores">Fornecedores</option>
+                        <option value="Impostos/DAS">Impostos/DAS</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="data">Data do Lançamento</label>
+                    <input type="date" id="data" required>
+                </div>
+
+                <button type="submit" class="btn-adicionar">+ Adicionar Lançamento</button>
+            </form>
+        </section>
+
+        <!-- HISTÓRICO E EXPORTAÇÃO -->
+        <section class="history-section">
+            <div class="history-header">
+                <h2>Histórico</h2>
+            </div>
+            
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Descrição</th>
+                            <th>Valor</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-lancamentos">
+                        <!-- Itens inseridos dinamicamente pelo JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- AÇÃO DE EXPORTAÇÃO PARA EXCEL -->
+        <button id="btn-exportar" class="btn-exportar">
+            📥 Exportar Relatório (CSV)
+        </button>
+
+    </div>
+
+    <!-- ====================================================================
+         SEÇÃO DE LÓGICA DE NEGÓCIO (JAVASCRIPT)
+         ==================================================================== -->
+    <script>
+        // 1. GERENCIAMENTO DE ESTADO DA APLICAÇÃO
+        // Carrega dados salvos no localStorage ou inicia um array vazio caso seja o primeiro acesso
+        let lancamentos = JSON.parse(localStorage.getItem('mei_lancamentos')) || [];
+
+        // Elementos da Interface DOM
+        const form = document.getElementById('finance-form');
+        const inputDescricao = document.getElementById('descricao');
+        const inputValor = document.getElementById('valor');
+        const inputCategoria = document.getElementById('categoria');
+        const inputData = document.getElementById('data');
+        
+        const txtReceitas = document.getElementById('total-receitas');
+        const txtDespesas = document.getElementById('total-despesas');
+        const txtSaldo = document.getElementById('saldo-liquido');
+        const tabela = document.getElementById('tabela-lancamentos');
+        const btnExportar = document.getElementById('btn-exportar');
+
+        // 2. INICIALIZAÇÃO DA PÁGINA
+        document.addEventListener('DOMContentLoaded', () => {
+            // Define a data de hoje por padrão no campo de data
+            inputData.value = new Date().toISOString().split('T')[0];
+            
+            // Renderiza os dados na tela
+            atualizarInterface();
+        });
+
+        // 3. EVENTO DE CADASTRO DE NOVO LANÇAMENTO
+        form.addEventListener('submit', (event) => {
+            event.preventDefault(); // Impede o recarregamento padrão da página
+
+            const novoLancamento = {
+                id: Date.now(), // Identificador único baseado no timestamp
+                descricao: inputDescricao.value.trim(),
+                valor: parseFloat(inputValor.value),
+                categoria: inputCategoria.value,
+                data: inputData.value
+            };
+
+            // Adiciona ao topo da lista (mais recentes primeiro)
+            lancamentos.unshift(novoLancamento);
+
+            // Persiste e atualiza
+            salvarNoLocalStorage();
+            atualizarInterface();
+
+            // Limpa o formulário e foca no primeiro campo
+            inputDescricao.value = '';
+            inputValor.value = '';
+            inputDescricao.focus();
+        });
+
+        // 4. MÉTODOS DE CÁLCULO FINANCEIRO
+        function calcularTotais() {
+            const receitas = lancamentos
+                .filter(item => item.valor > 0)
+                .reduce((acc, item) => acc + item.valor, 0);
+
+            const despesas = lancamentos
+                .filter(item => item.valor < 0)
+                .reduce((acc, item) => acc + Math.abs(item.valor), 0);
+
+            const saldo = receitas - despesas;
+
+            return { receitas, despesas, saldo };
+        }
+
+        // 5. ATUALIZAÇÃO DA INTERFACE (UX/UI)
+        function atualizarInterface() {
+            // A. Atualiza Cards do Dashboard
+            const { receitas, despesas, saldo } = calcularTotais();
+
+            txtReceitas.textContent = formatarMoeda(receitas);
+            txtDespesas.textContent = formatarMoeda(despesas);
+            txtSaldo.textContent = formatarMoeda(saldo);
+
+            // Regra de UX: Alterna cor do saldo conforme resultado financeiro
+            if (saldo >= 0) {
+                txtSaldo.className = 'saldo-positivo';
+            } else {
+                txtSaldo.className = 'saldo-negativo';
+            }
+
+            // B. Renderiza Tabela de Histórico
+            tabela.innerHTML = '';
+
+            if (lancamentos.length === 0) {
+                tabela.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: var(--cor-texto-suave); padding: 16px;">
+                            Nenhum lançamento registrado.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            lancamentos.forEach((item) => {
+                const tr = document.createElement('tr');
+                const eReceita = item.valor > 0;
+
+                tr.innerHTML = `
+                    <td>${formatarData(item.data)}</td>
+                    <td>
+                        <strong>${item.descricao}</strong><br>
+                        <span class="categoria-tag">${item.categoria}</span>
+                    </td>
+                    <td class="${eReceita ? 'txt-receita' : 'txt-despesa'}" style="font-weight: 600;">
+                        ${formatarMoeda(item.valor)}
+                    </td>
+                    <td>
+                        <button class="btn-deletar" onclick="excluirLancamento(${item.id})" title="Excluir">×</button>
+                    </td>
+                `;
+                tabela.appendChild(tr);
+            });
+        }
+
+        // 6. EXCLUSÃO DE ITEM
+        window.excluirLancamento = function(id) {
+            lancamentos = lancamentos.filter(item => item.id !== id);
+            salvarNoLocalStorage();
+            atualizarInterface();
+        };
+
+        // 7. PERSISTÊNCIA LOCAL
+        function salvarNoLocalStorage() {
+            localStorage.setItem('mei_lancamentos', JSON.stringify(lancamentos));
+        }
+
+        // 8. FUNÇÕES AUXILIARES DE FORMATAÇÃO
+        function formatarMoeda(valor) {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function formatarData(dataISO) {
+            if (!dataISO) return '';
+            const [ano, mes, dia] = dataISO.split('-');
+            return `${dia}/${mes}/${ano}`;
+        }
+
+        // 9. EXPORTAÇÃO DE RELATÓRIO (CSV / EXCEL)
+        btnExportar.addEventListener('click', () => {
+            if (lancamentos.length === 0) {
+                alert('Não há dados para exportar.');
+                return;
+            }
+
+            // Cabeçalho do CSV
+            let csvContent = 'data:text/csv;charset=utf-8,\uFEFF'; // \uFEFF adiciona BOM para correta acentuação no Excel
+            csvContent += 'Data;Descrição;Categoria;Valor (R$)\n';
+
+            // Linhas de dados
+            lancamentos.forEach(item => {
+                const dataFormatted = formatarData(item.data);
+                const valorFormatted = item.valor.toFixed(2).replace('.', ',');
+                csvContent += `"${dataFormatted}";"${item.descricao}";"${item.categoria}";"${valorFormatted}"\n`;
+            });
+
+            // Criação do link de download dinâmico
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', `relatorio_financeiro_mei_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            
+            link.click();
+            document.body.removeChild(link);
+        });
+    </script>
+</body>
+</html>
